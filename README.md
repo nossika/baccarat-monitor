@@ -13,7 +13,7 @@ $ npm start
 
 ### 发牌和胜负判断
 
+https://en.wikipedia.org/wiki/Baccarat
+
 ### 下注及赔率
-
-
 

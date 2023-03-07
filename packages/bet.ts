@@ -5,7 +5,7 @@ export const ODDS = {
   banker: 1 + 1,
   bankerWithLucky6: 1 + 0.5,
   player: 1 + 1,
-  draw: 1 + 8,
+  tie: 1 + 8,
   lucky6With2: 1 + 12,
   lucky6With3: 1 + 20,
 }
@@ -13,7 +13,7 @@ export const ODDS = {
 export enum BetType {
   Banker,
   Player,
-  Draw,
+  Tie,
   Lucky6,
 }
 
@@ -22,18 +22,18 @@ export const getBetRate = (result: GameResult) => {
     ? result.lucky6Type === Lucky6Type.None 
       ? ODDS.banker
       : ODDS.bankerWithLucky6
-    : result.winner === Winner.Draw
+    : result.winner === Winner.Tie
       ? 1
       : 0;
 
   const player = result.winner === Winner.Player
     ? ODDS.player
-    : result.winner === Winner.Draw
+    : result.winner === Winner.Tie
       ? 1
       : 0;
 
-  const draw = result.winner === Winner.Draw
-    ? ODDS.draw
+  const tie = result.winner === Winner.Tie
+    ? ODDS.tie
     : 0;
 
   const lucky6 = result.lucky6Type !== Lucky6Type.None
@@ -45,7 +45,7 @@ export const getBetRate = (result: GameResult) => {
   return {
     [BetType.Banker]: banker,
     [BetType.Player]: player,
-    [BetType.Draw]: draw,
+    [BetType.Tie]: tie,
     [BetType.Lucky6]: lucky6,
   };
 }

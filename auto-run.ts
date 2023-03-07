@@ -1,16 +1,23 @@
+import logger from '@@/util/logger';
+import { getGameInfo } from '@@/util/formatter';
+import { BetType, getBetRate, ODDS } from '@/bet';
 import { Lucky6Type, runGame, Winner } from '@/game';
-import { Card } from '@/poker';
-import { ODDS } from '@/bet';
-import logger from '@/logger';
 
-export const autoRun = (round: number) => {
+export const autoRun = (round: number, showRoundInfo = false) => {
   let player = 0;
   let banker = 0;
-  let draw = 0;
+  let tie = 0;
   let lucky6 = 0;
   let lucky6With2 = 0;
 
+  let playerRate = 0;
+  let bankerRate = 0;
+  let tieRate = 0;
+  let lucky6Rate = 0;
+
   const roundDigit = String(round).length;
+
+  logger.log('----- START -----');
 
   for (let r = 0; r < round; r++) {
     const game = runGame();
@@ -22,8 +29,8 @@ export const autoRun = (round: number) => {
       case Winner.Player:
         player += 1;
         break;
-      case Winner.Draw:
-        draw += 1;
+      case Winner.Tie:
+        tie += 1;
         break;
     }
 
@@ -34,90 +41,25 @@ export const autoRun = (round: number) => {
       }
     }
 
-    logger.log(`[round-${String(r + 1).padStart(roundDigit, '0')}]`, getGameInfo(game));
-  }
+    const rate = getBetRate(game.result);
 
-  const exceptation = getExceptation({
-    round,
-    banker,
-    player,
-    draw,
-    lucky6,
-    lucky6With2,
-  });
+    playerRate += rate[BetType.Player] - 1;
+    bankerRate += rate[BetType.Banker] - 1;
+    tieRate += rate[BetType.Tie] - 1;
+    lucky6Rate += rate[BetType.Lucky6] - 1;
+
+    showRoundInfo && logger.log(`[round-${String(r + 1).padStart(roundDigit, '0')}]`, getGameInfo(game));
+  }
 
   logger.log('----- RESULT -----');
 
-  logger.log(`round --- ${round}`);
-  logger.log(`banker --- win: ${withPercent(banker, round)} | exceptation: ${exceptation.banker}`);
-  logger.log(`player --- win: ${withPercent(player, round)} | exceptation: ${exceptation.player}`);
-  logger.log(`draw --- win: ${withPercent(draw, round)} | exceptation: ${exceptation.draw}`);
-  logger.log(`lucky6 --- win: ${withPercent(lucky6, round)}[${withPercent(lucky6With2, round)}+${withPercent(lucky6 - lucky6With2, round)}] | exceptation: ${exceptation.lucky6}`);
+  logger.log(`[round] ${round}`);
+  logger.log(`[banker] win: ${banker}(${toPercent(banker, round)}) | exceptation: ${toPercent(bankerRate, round)}`);
+  logger.log(`[player] win: ${player}(${toPercent(player, round)}) | exceptation: ${toPercent(playerRate, round)}`);
+  logger.log(`[tie] win: ${tie}(${toPercent(tie, round)}) | exceptation: ${toPercent(tieRate, round)}`);
+  logger.log(`[lucky6] win: ${lucky6}(${lucky6With2}+${lucky6 - lucky6With2})(${toPercent(lucky6, round)}) | exceptation: ${toPercent(lucky6Rate, round)}`);
 };
 
-const getGameInfo = (game: ReturnType<typeof runGame>) => {
-  const resultStr = 'result: ' + {
-    [Winner.Banker]: 'banker',
-    [Winner.Player]: 'player',
-    [Winner.Draw]: 'draw  ',
-  }[game.result.winner];
-
-  const getCardDesc = (cards: Card[]) => {
-    const cardsString = cards.map(c => `${String(c.figure).padStart(2, '0')}${c.pattern}`);
-
-    if (cardsString.length <= 2) {
-      cardsString.push('---');
-    }
-    return cardsString.join('/');
-  }
-
-  const bankerCardsStr = `banker${game.detail.bankerPoint} (${getCardDesc(game.detail.banker.cards)})`;
-  const playerCardsStr = `player${game.detail.playerPoint} (${getCardDesc(game.detail.player.cards)})`;
-
-  const info = `${resultStr} --- ${bankerCardsStr} VS ${playerCardsStr}`;
-
-  return info;
-}
-
-const withPercent = (number: number, total: number, fixed = 3) => {
-  return `${number}(${(number / total * 100).toFixed(fixed)}%)`;
-}
-
-
-const getExceptation = ({
-  round,
-  banker,
-  player,
-  draw,
-  lucky6,
-  lucky6With2,
-  base = round,
-}: {
-  round: number,
-  banker: number,
-  player: number,
-  draw: number,
-  lucky6: number,
-  lucky6With2: number,
-  base?: number,
-}) => {
-  const bankerExceptation = ((banker - lucky6) / round * ODDS.banker) + (lucky6 / round * ODDS.bankerWithLucky6) + (draw / round * 1);
-
-  const playerExceptation = (player / round * ODDS.player) + (draw / round * 1);
-
-  const drawExceptation = draw / round * ODDS.draw;
-
-  const lucky6Exceptation = (lucky6With2 / round * ODDS.lucky6With2) + ((lucky6 - lucky6With2) / round * ODDS.lucky6With3);
-
-
-  const withBase = (rate: number, fixed = 2) => {
-    return +(base * rate).toFixed(fixed);
-  }
-
-  return {
-    banker: withBase(bankerExceptation),
-    player: withBase(playerExceptation),
-    draw: withBase(drawExceptation),
-    lucky6: withBase(lucky6Exceptation),
-  }
+const toPercent = (number: number, total: number, fixed = 3) => {
+  return `${(number / total * 100).toFixed(fixed)}%`;
 };

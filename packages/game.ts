@@ -13,11 +13,11 @@ export const runGame = () => {
   banker.add(poker.draw());
 
   if (!player.isDone() && !banker.isDone()) {
-    if (player.needAdd()) {
+    if (player.needThird()) {
       player.add(poker.draw());
     }
 
-    if (banker.needAdd(
+    if (banker.needThird(
       player.cards.length,
       calcPoint([player.lastCard()]),
     )) {
@@ -61,7 +61,7 @@ class Player {
     this.cards.push(card);
   }
   
-  needAdd(): boolean {
+  needThird(): boolean {
     return calcPoint(this.cards) <= 5;
   }
 
@@ -76,15 +76,19 @@ class Player {
 
 class Banker {
   cards: Card[] = [];
+
   add(card: Card): void {
     this.cards.push(card);
   }
-  needAdd(playerCardsLength: number, playerLastCardPoint: number): boolean {
+
+  needThird(playerCardsLength: number, playerLastCardPoint: number): boolean {
+    const point = calcPoint(this.cards);
+
     if (playerCardsLength <= 2) {
-      return calcPoint(this.cards) <= 5;
+      return point <= 5;
     }
 
-    switch (calcPoint(this.cards)) {
+    switch (point) {
       case 0:
       case 1:
       case 2:
@@ -107,14 +111,14 @@ class Banker {
   }
 
   isDone(): boolean {
-    return [8, 9].includes(calcPoint(this.cards));
+    return calcPoint(this.cards) >= 8;
   }
 }
 
 export enum Winner {
   Player = 1,
   Banker,
-  Draw,
+  Tie,
 }
 
 export enum Lucky6Type {
@@ -137,5 +141,5 @@ const getWinner = (playerPoint: number, bankerPoint: number): Winner => {
     return Winner.Banker;
   }
 
-  return Winner.Draw;
+  return Winner.Tie;
 }

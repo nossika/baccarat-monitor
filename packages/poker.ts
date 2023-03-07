@@ -58,7 +58,7 @@ export class Poker {
 
   draw() {
     const card = this.cards.pop();
-    if (!card) throw Error('poker run out');
+    if (!card) throw new Error('poker run out');
     return card;
   }
 }
