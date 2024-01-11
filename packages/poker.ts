@@ -1,13 +1,29 @@
 export interface Card {
-  figure: number,
+  figure: CardFigure,
   pattern: CardPattern,
 }
 
 export enum CardPattern {
-  Spade = 'a',
-  Heart = 'b',
-  Diamond = 'c',
-  Club = 'd',
+  Spade = '♠️',
+  Heart = '♥️',
+  Diamond = '♦️',
+  Club = '♣️',
+}
+
+export enum CardFigure {
+  Ace = 'A',
+  Two = '2',
+  Three = '3',
+  Four = '4',
+  Five = '5',
+  Six = '6',
+  Seven = '7',
+  Eight = '8',
+  Nine = '9',
+  Ten = '10',
+  Jack = 'J',
+  Queen = 'Q',
+  King = 'K',
 }
 
 export const genCards = (count: number): Card[] => {
@@ -20,14 +36,28 @@ export const genCards = (count: number): Card[] => {
       CardPattern.Diamond,
       CardPattern.Club,
     ].forEach((pattern) => {
-      for (let figure = 1; figure <= 13; figure++) {
+      [
+        CardFigure.Ace,
+        CardFigure.Two,
+        CardFigure.Three,
+        CardFigure.Four,
+        CardFigure.Five,
+        CardFigure.Six,
+        CardFigure.Seven,
+        CardFigure.Eight,
+        CardFigure.Nine,
+        CardFigure.Ten,
+        CardFigure.Jack,
+        CardFigure.Queen,
+        CardFigure.King,
+      ].forEach((figure) => {
         const card: Card = {
           figure,
           pattern,
         }
 
         cards.push(card);
-      }
+      });
     });
   }
 
@@ -42,11 +72,6 @@ export const shuffle = <T,>(arr: T[]): T[] => {
   }
 
   return arr;
-}
-
-export const calcPoint = (cards: Card[]): number => {
-  const sum = cards.reduce((s, c) => s + (c.figure >= 10 ? 0 : c.figure), 0);
-  return sum % 10;
 }
 
 export class Poker {

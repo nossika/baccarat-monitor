@@ -1,5 +1,6 @@
-import type { Card } from './poker';
-import { calcPoint, Poker } from './poker';
+import { Poker } from '@/poker';
+import { getCardsPoint } from '@@/util/point';
+import type { Card } from '@/poker';
 
 export const runGame = () => {
   const poker = new Poker(8);
@@ -19,14 +20,14 @@ export const runGame = () => {
 
     if (banker.needThird(
       player.cards.length,
-      calcPoint([player.lastCard()]),
+      getCardsPoint([player.lastCard()]),
     )) {
       banker.add(poker.draw());
     }
   }
 
-  const bankerPoint = calcPoint(banker.cards);
-  const playerPoint = calcPoint(player.cards);
+  const bankerPoint = getCardsPoint(banker.cards);
+  const playerPoint = getCardsPoint(player.cards);
 
   const winner = getWinner(playerPoint, bankerPoint);
   const isLucky6 = winner === Winner.Banker && bankerPoint === 6;
@@ -62,11 +63,11 @@ class Player {
   }
   
   needThird(): boolean {
-    return calcPoint(this.cards) <= 5;
+    return getCardsPoint(this.cards) <= 5;
   }
 
   isDone(): boolean {
-    return calcPoint(this.cards) >= 8;
+    return getCardsPoint(this.cards) >= 8;
   }
 
   lastCard(): Card {
@@ -82,7 +83,7 @@ class Banker {
   }
 
   needThird(playerCardsLength: number, playerLastCardPoint: number): boolean {
-    const point = calcPoint(this.cards);
+    const point = getCardsPoint(this.cards);
 
     if (playerCardsLength <= 2) {
       return point <= 5;
@@ -111,7 +112,7 @@ class Banker {
   }
 
   isDone(): boolean {
-    return calcPoint(this.cards) >= 8;
+    return getCardsPoint(this.cards) >= 8;
   }
 }
 

@@ -5,23 +5,19 @@ export const getGameInfo = (game: ReturnType<typeof runGame>) => {
   const resultStr = 'result: ' + {
     [Winner.Banker]: 'banker',
     [Winner.Player]: 'player',
-    [Winner.Tie]: 'tie   ',
-  }[game.result.winner];
+    [Winner.Tie]: 'tie',
+  }[game.result.winner].padEnd(6, ' ');
 
   const getCardDesc = (cards: Card[]) => {
-    const cardsString = cards.map(c => `${String(c.figure).padStart(2, '0')}${c.pattern}`);
-
-    if (cardsString.length <= 2) {
-      cardsString.push('---');
-    }
+    const cardsString = cards.map(c => `${c.pattern}${c.figure}`);
 
     return cardsString.join('/');
   }
 
-  const bankerCardsStr = `banker[${game.detail.bankerPoint}] (${getCardDesc(game.detail.banker.cards)})`;
-  const playerCardsStr = `player[${game.detail.playerPoint}] (${getCardDesc(game.detail.player.cards)})`;
+  const playerCardsStr = `player<${game.detail.playerPoint}> (${getCardDesc(game.detail.player.cards)})`;
+  const bankerCardsStr = `banker<${game.detail.bankerPoint}> (${getCardDesc(game.detail.banker.cards)})`;
 
-  const info = `${resultStr} ----- ${bankerCardsStr} VS ${playerCardsStr}`;
+  const info = `${resultStr} ----- ${playerCardsStr} vs ${bankerCardsStr}`;
 
   return info;
 }
